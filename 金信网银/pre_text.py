@@ -5,9 +5,6 @@ import random
 import time
 import requests
 
-# url = 'http://wuhan.kuyiso.com/daikuan/33989681x.htm'
-url = 'http://www.jqw.com/proshow-2017000195250.htm'
-
 class test_url(object):
 
     def __init__(self):
@@ -17,8 +14,8 @@ class test_url(object):
         }
 
     def request(self,url):
-        # resp = requests.get(url, headers = self.headers)
-        resp = requests.get(url,headers = self.headers,proxies={'http':'http://1203595:0961510fdecb9239f0024456211224a8@s3.proxy.mayidaili.com:9064'})
+        resp = requests.get(url, headers = self.headers)
+        # resp = requests.get(url,headers = self.headers,proxies={'http':'http://1203595:0961510fdecb9239f0024456211224a8@s3.proxy.mayidaili.com:9064'})
         print(resp.status_code)
         print(resp.url)
         print(resp.encoding)
@@ -60,5 +57,8 @@ class test_url(object):
         print('检测完毕')
 
 if __name__ == '__main__':
+    # url = 'http://wuhan.kuyiso.com/daikuan/33989681x.htm'
+    url = 'http://www.jqw.com/proshow-2017000195250.htm'
+
     t = test_url()
     t.request(url)
