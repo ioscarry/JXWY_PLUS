@@ -4,8 +4,8 @@ import time
 
 import requests
 
-my_app_key = "1203595"
-app_secret = "0961510fdecb9239f0024456211224a8"
+my_app_key = ""
+app_secret = ""
 mayi_url = 's3.proxy.mayidaili.com'
 mayi_port = '9064'
 

@@ -1,0 +1,2 @@
+a = 'http://hf.58.com/danbaobaoxiantouzi/34966916494279x.shtml?psid=115515949201351718898444875&entinfo=34966916494279_p&slot=-1&iuType=p_1&PGTID=0d3036b0-0034-5a72-cd95-1b3014921906&ClickID=40'
+b = 'https://hf.58.com/danbaobaoxiantouzi/34966916494279x.shtml?psid=115515949201351718898444875&entinfo=34966916494279_p&slot=-1&iuType=p_1&PGTID=0d3036b0-0034-5a72-cd95-1b3014921906&ClickID=40'

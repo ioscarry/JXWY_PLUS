@@ -10,7 +10,6 @@ class Ceshi(object):
 
     def __init__(self):
         self.file = open('qidian8.json','a+')
-        self.file2 = open('qidian8.json','r')
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
         }
@@ -18,7 +17,7 @@ class Ceshi(object):
         self.final = 0
 
     def request(self,url):
-        resp = requests.get(url, headers = self.headers,proxies={'http':'http://1203595:0961510fdecb9239f0024456211224a8@s3.proxy.mayidaili.com:9064'})
+        resp = requests.get(url, headers = self.headers,proxies={})
         print('原状态码：'+ str(resp.status_code))
         print(resp.url)
         data = {}
@@ -57,7 +56,7 @@ class Ceshi(object):
         time.sleep(delay)
 
     def judge_url(self):
-        content = self.file2.readlines()
+        content = self.file.readlines()
         # print(content)
         for i in content:
             ins = i.strip().strip(',')
@@ -67,7 +66,6 @@ class Ceshi(object):
 
     def __del__(self):
         self.file.close()
-        self.file2.close()
 
 if __name__ == '__main__':
     ceshi = Ceshi()

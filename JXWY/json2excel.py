@@ -1,9 +1,8 @@
-import time
 import xlwt, json, openpyxl,xlrd
 from xlutils.copy import copy
 #
 # def readJsonfile():
-#     jsobj = json.load(open(r'C:\Users\zhd\Desktop\项目\pachong_practice\金信网银\liebiao.json'))
+#     jsobj = json.load(open(r'C:\Users\zhd\Desktop\项目\pachong_practice\JXWY\liebiao.json'))
 #     return jsobj
 
 def readJsonfile(file_path):

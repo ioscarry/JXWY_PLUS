@@ -1,5 +1,4 @@
 import requests
-# XPath
 from lxml import etree
 import json
 import threading

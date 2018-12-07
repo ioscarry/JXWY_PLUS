@@ -1,8 +1,10 @@
 
-# 该代码为检测url的有效性，适用于若失效返回200的情况，
-# 新增实现功能：1.判断url的一致性；
+# 该代码为检测url的有效性，适用于若失效仍会返回200的情况，
+
+# 实现功能：    1.判断请求url与返回url的一致性；
 #              2.从源码内容进行判断；
-#              3.考虑到不同页面的编码问题。
+#              3.考虑到不同页面的编码问题；
+#              4.检测完一遍进行第二次检测补漏时会自动对url排重，不再请求已经访问过的url
 
 import json
 import random
@@ -21,7 +23,7 @@ class Ceshi(object):
         self.final = 0
 
     def request(self,url):
-        resp = requests.get(url, headers = self.headers,proxies={'http':'http://1203595:0961510fdecb9239f0024456211224a8@s3.proxy.mayidaili.com:9064'})
+        resp = requests.get(url, headers = self.headers,proxies={})
         print('原状态码：'+ str(resp.status_code))
         print(resp.url)
         self.data = {}  # 临时字典
