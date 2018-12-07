@@ -133,8 +133,10 @@ class Excel_opt(object):
         print('遇到的反爬数量为' + str(self.test_method.final))
 
 if __name__ == '__main__':
+    #   注意： 在Excel_opt里设置要操作的sheet；
+    #          提前检测好媒介的url是否是https；
 
-    file_name = '20181205_监测源.xlsx'  #   注意： 在Excel_opt里设置要操作的sheet
+    file_name = '20181205_监测源.xlsx'
 
     check_again = 0  # 当为0时新增两列并记录结果，当为1时不新增列但会判断去重，当为2时直接覆盖。
     judge_text = '您浏览的页面不存在'
