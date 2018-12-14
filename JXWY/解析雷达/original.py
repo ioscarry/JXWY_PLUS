@@ -66,3 +66,6 @@ def readTrs(filePath):
                 else:
                     dicContent["people"] = ''
             print(dicContent)
+
+filePath = r'test.trs'
+readTrs(filePath)

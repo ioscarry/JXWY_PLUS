@@ -5,17 +5,17 @@ from xlutils.copy import copy
 # 若想对原excel文件读写操作，需要xlutils的copy函数，或直接使用openpyxl；
 '=================================   xlrd   =========================================='
 def use_xlrd():
-    readbook = xlrd.open_workbook('mix.xls',formatting_info=True) # 保留原格式
-    sheet = readbook.sheet_by_name('Sheet1') # 此时sheet是对象
-    # sheet = readbook.sheet_by_index(0)  或  readbook.sheets()[0]
+    readbook = xlrd.open_workbook('ailaba.xls',formatting_info=True) # 保留原格式
+    # sheet = readbook.sheet_by_name('Sheet1') # 此时sheet是对象
+    sheet = readbook.sheet_by_index(0)  #或  readbook.sheets()[0]
 
     # 获取sheet最大行数和列数
     nrows = sheet.nrows #行
     ncols = sheet.ncols #列
 
     # 获取整行和整列的值（数组）
-    nrows_values = sheet.row_values(0)
-    ncols_values = sheet.col_values(0)
+    nrows_values = sheet.row_values(0) # 第0行的值
+    ncols_values = sheet.col_values(0) # 第0列的值
     print(nrows_values)
     print(ncols_values)
     # 获取单元格的值
@@ -108,4 +108,5 @@ if __name__ == '__main__':
     filename_xlsx = r'D:\工作文件\项目\pachong_practice\金信网银\ailaba.xlsx'
     filename_xls = ''
     file_csv = ''
-    use_openpyxl('jqw.xlsx')
+    # use_openpyxl('jqw.xlsx')
+    use_xlrd()
