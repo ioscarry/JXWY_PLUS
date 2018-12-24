@@ -6,23 +6,27 @@ import time
 
 from pymongo import MongoClient
 
-client = MongoClient(host='127.0.0.1', port=27017, userName='lizehua', password='lizehua')
+# client = MongoClient(host='127.0.0.1', port=27018, userName='lizehua', password='lizehua')
+client = MongoClient(host='192.168.2.6', port=27017)
 print(client.address)
-print(client.database_names())
-db = client.hehe
-print(db.collection_names())
-col = db['jxwy']
+print(client.list_database_names())
+db = client.JXWY
+print(db.list_collection_names())
+col = db['trs_adv']
 # col.remove({})
+#192.168.2.253 27017
 
 filename = r'test.trs'
-filename2 = r'C:\Users\zhd\Desktop\liebiao_2.trs'
+filename2 = r'D:\数据库导出TRS文件\liebiao_final_1.trs'
+#DeprecationWarning: update is deprecated. Use replace_one, update_one or update_many instead.
 begin = time.time()
 final_count = 0
 erro_count = 0
-mix_list = []    # 汇总到列表
+insert_count = 0
+# mix_list = []    # 汇总到列表
 
-def read_file(filename):
-    with open(filename, 'r',encoding='gb18030') as file:
+def read_file(name):
+    with open(name, 'r',encoding='gb18030') as file:
         allStr = ""    # 将所有内容拼接到一起
         for line in file:
             allStr += line.strip()
@@ -30,86 +34,80 @@ def read_file(filename):
                 yield allStr
                 allStr = ""
 
-# for循环解析迭代对象的字符串
-# i = 0
-for everyStr in read_file(filename):
-    final_count += 1
-    print(everyStr)
-    dicContent = {}  # 以字典格式存储每一条数据
-    # i += 1
-    # if i >= 10:
-    #     break
-    '=====================================华丽的分割线============================================'
-    try:
-        dicContent["SID"] = re.search("<IR_SID>=(.*?)<IR_HKEY>", everyStr).group(1)
-        dicContent["urlname"] = re.search("<IR_URLNAME>=(.*?)<IR_.+?>=", everyStr).group(1)
-        dicContent["updatatime"] = re.search("<IR_LASTTIME>=(.*?)<IR_.+?>=", everyStr).group(1).replace(".", "-")
-        dicContent["urltime"] = re.search("<IR_URLTIME>=(.*?)<IR_.+?>=", everyStr).group(1).replace(".", "-")
-        dicContent["urltitle"] = re.search("<IR_URLTITLE>=([\s\S]*?)<IR_.+?>=", everyStr).group(1)
-        dicContent["category"] = re.search("<IR_CHANNEL>=(.*?)<IR_.+?>=", everyStr).group(1)
-        dicContent["fuwu"] = re.search("<IR_CHANNEL>=(.*?)<IR_.+?>=", everyStr).group(1)
-        dicContent["sitename"] = re.search("<IR_SITENAME>=(.*?)<IR_.+?>=", everyStr).group(1)
-
+def start():
+    global final_count,erro_count
+    for everyStr in read_file(filename2):
+        final_count += 1
+        print(final_count)
+        dicContent = {}  # 以字典格式存储每一条数据
+        '=====================================华丽的分割线============================================'
         try:
-            dicContent["province"] = re.search("<IR_VRESERVED1>=(.*?)<IR_.+?>=", everyStr).group(1)
+            dicContent["SID"] = re.search("<IR_SID>=(.*?)<IR_HKEY>", everyStr).group(1)
+            dicContent["urlname"] = re.search("<IR_URLNAME>=(.*?)<IR_.+?>=", everyStr).group(1)
+            dicContent["updatatime"] = re.search("<IR_LASTTIME>=(.*?)<IR_.+?>=", everyStr).group(1).replace(".", "-")
+            dicContent["urltime"] = re.search("<IR_URLTIME>=(.*?)<IR_.+?>=", everyStr).group(1).replace(".", "-")
+            dicContent["urltitle"] = re.search("<IR_URLTITLE>=([\s\S]*?)<IR_.+?>=", everyStr).group(1)
+            dicContent["category"] = re.search("<IR_CHANNEL>=(.*?)<IR_.+?>=", everyStr).group(1)
+            dicContent["fuwu"] = re.search("<IR_CHANNEL>=(.*?)<IR_.+?>=", everyStr).group(1)
+            dicContent["sitename"] = re.search("<IR_SITENAME>=(.*?)<IR_.+?>=", everyStr).group(1)
+
+            try:
+                dicContent["province"] = re.search("<IR_VRESERVED1>=(.*?)<IR_.+?>=", everyStr).group(1)
+            except:
+                dicContent["province"] = ""
+
+            try:
+                dicContent["city"] = re.search("<IR_VRESERVED2>=(.*?)<IR_.+?>=", everyStr).group(1)
+            except:
+                dicContent["city"] = ''
+            try:
+                dicContent["content"] = re.search("<IR_CONTENT>=([\s\S]*?)<IR_.+?>=", everyStr).group(1)
+            except:
+                dicContent["content"] = ""
+
+            try:
+                dicContent["company"] = re.search("<IR_SRCNAME>=(.*?)<IR_.+?>=", everyStr).group(1)
+            except:
+                dicContent["company"] = ""
+
+            try:
+                dicContent["address"] = re.search("<IR_DISTRICT>=(.*?)<IR_.+?>=", everyStr).group(1)
+            except:
+                dicContent["address"] = ""
+
+            if re.search("<IR_SRESERVED1>=(.*?)<IR_.+?>=", everyStr) != None:
+                dicContent["yuming"] = re.search("<IR_SRESERVED1>=(.*?)<IR_.+?>=", everyStr).group(1)
+            else:
+                dicContent["yuming"] = ''
+
+            if re.search("<IR_VRESERVED3>=(.*?)<IR_.+?>=", everyStr) != None:
+                dicContent["icp"] = re.search("<IR_VRESERVED3>=(.*?)<IR_.+?>=", everyStr).group(1)
+            else:
+                dicContent["icp"] = ''
+
+            try:
+                dicContent["icpsheng"] = re.search("<IR_VRESERVED4>=(.*?)<IR_.+?>=", everyStr).group(1)
+            except:
+                dicContent["icpsheng"] = ''
+
+            try:
+                dicContent["people"] = re.search("<IR_AUTHORS>=(.*?)<IR_.+?>=", everyStr).group(1)
+            except:
+                dicContent["people"] = ''
         except:
-            dicContent["province"] = ""
+            erro_count += 1
+            print('这条数据不正常')
 
-        try:
-            dicContent["city"] = re.search("<IR_VRESERVED2>=(.*?)<IR_.+?>=", everyStr).group(1)
-        except:
-            dicContent["city"] = ''
-        try:
-            dicContent["content"] = re.search("<IR_CONTENT>=([\s\S]*?)<IR_.+?>=", everyStr).group(1)
-        except:
-            dicContent["content"] = ""
+        # print(dicContent)
+        # mix_list.append(dicContent)
 
-        try:
-            dicContent["company"] = re.search("<IR_SRCNAME>=(.*?)<IR_.+?>=", everyStr).group(1)
-        except:
-            dicContent["company"] = ""
-
-        try:
-            dicContent["address"] = re.search("<IR_DISTRICT>=(.*?)<IR_.+?>=", everyStr).group(1)
-        except:
-            dicContent["address"] = ""
-
-        if re.search("<IR_SRESERVED1>=(.*?)<IR_.+?>=", everyStr) != None:
-            dicContent["yuming"] = re.search("<IR_SRESERVED1>=(.*?)<IR_.+?>=", everyStr).group(1)
-        else:
-            dicContent["yuming"] = ''
-
-        if re.search("<IR_VRESERVED3>=(.*?)<IR_.+?>=", everyStr) != None:
-            dicContent["icp"] = re.search("<IR_VRESERVED3>=(.*?)<IR_.+?>=", everyStr).group(1)
-        else:
-            dicContent["icp"] = ''
-
-        try:
-            dicContent["icpsheng"] = re.search("<IR_VRESERVED4>=(.*?)<IR_.+?>=", everyStr).group(1)
-        except:
-            dicContent["icpsheng"] = ''
-
-        try:
-            dicContent["people"] = re.search("<IR_AUTHORS>=(.*?)<IR_.+?>=", everyStr).group(1)
-        except:
-            dicContent["people"] = ''
-    except:
-        erro_count += 1
-        print('这条数据不正常')
-
-    print(dicContent)
-    mix_list.append(dicContent)
-
-    # col.update({"urlname":dicContent["urlname"]},dicContent, upsert=True)  # 条件存在则修改，无则新建插入
-    col.update({'urlname':dicContent["urlname"]},{'$setOnInsert':dicContent},upsert=True)  # 条件存在则pass，无则新建插入
-    print('-------------------------------------------------------------')
+        # col.update({"urlname":dicContent["urlname"]},dicContent, upsert=True)  # 条件存在则修改，无则新建插入
+        col.update({'urlname':dicContent["urlname"]},{'$setOnInsert':dicContent},upsert=True)  # 条件存在则pass，无则新建插入
+        # print('-------------------------------------------------------------')
     '=====================================华丽的分割线============================================'
 
-print(time.time()-begin)
+print('处理的时长为：'+str(time.time()-begin))
 print('处理数据的数量：' + str(final_count))
-print(len(mix_list))
 print('=====================================================')
-result = col.find()
-for data in result:
-    print(data)
-print(col.count())
+
+print(col.estimated_document_count())
