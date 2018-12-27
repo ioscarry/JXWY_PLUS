@@ -1,8 +1,8 @@
 # 该代码用于查看关键字段
 import linecache
 
-filename = r'test2.trs'
-filename2 = r'D:\数据库导出TRS文件\liebiao_final_1.trs'
+filename = r'test.trs'
+filename2 = r'D:\云服务器导出TRS文件\12plus_kd8.trs'
 
 def read_file(filename):
     with open(filename, 'r',encoding='gb18030') as file:

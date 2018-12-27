@@ -18,7 +18,7 @@ col = db['jxwy']
 #192.168.2.253 27017
 
 filename = r'test.trs'
-filename2 = r'D:\云服务器导出TRS文件\mix_final_2.trs'
+filename2 = r'D:\云服务器导出TRS文件\mix_final_1.trs'
 
 begin = time.time()
 final_count = 0
