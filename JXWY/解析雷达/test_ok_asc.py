@@ -6,7 +6,7 @@ import time
 from pymongo import MongoClient
 
 # client = MongoClient(host='127.0.0.1', port=27018, userName='lizehua', password='lizehua')
-client = MongoClient(host='192.168.2.10', port=27018)
+client = MongoClient(host='192.168.2.99', port=27018)
 print(client.address)
 print(client.list_database_names())
 # db = client.JXWY
@@ -101,7 +101,8 @@ def start():
         # print(dicContent)
 
         # col.update({"urlname":dicContent["urlname"]},dicContent, upsert=True)  # 条件存在则修改，无则新建插入
-        col.update_one({'urlname':dicContent["urlname"]},{'$setOnInsert':dicContent},upsert=True)  # 条件存在则pass，无则新建插入
+        col.insert(dicContent)  # 条件存在则修改，无则新建插入
+        # col.update_one({'urlname':dicContent["urlname"]},{'$setOnInsert':dicContent},upsert=True)  # 条件存在则pass，无则新建插入
 
 if __name__ == '__main__':
     start()

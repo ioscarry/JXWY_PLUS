@@ -6,19 +6,19 @@ import time
 from pymongo import MongoClient
 
 # client = MongoClient(host='127.0.0.1', port=27018, userName='lizehua', password='lizehua')
-client = MongoClient(host='192.168.2.10', port=27018)
+client = MongoClient(host='192.168.2.99', port=27018)
 print(client.address)
 print(client.list_database_names())
 # db = client.JXWY
 db = client.hehe
 print(db.list_collection_names())
 col = db['jxwy']
-# col = db['trs_adv_1812']
+# col = db['test']
 # col.remove({})
 #192.168.2.253 27017
 
 filename = r'test.trs'
-filename2 = r'D:\云服务器导出TRS文件\mix_final_1.trs'
+filename2 = r'D:\云服务器导出TRS文件\lieju_final_1.trs'
 
 begin = time.time()
 final_count = 0
@@ -38,6 +38,8 @@ def start():
     global final_count,erro_count
     for everyStr in read_file(filename2):
         final_count += 1
+        if final_count > 10:
+            break
         print(final_count)
         dicContent = {}  # 以字典格式存储每一条数据
         '=====================================华丽的分割线============================================'
@@ -101,7 +103,8 @@ def start():
         # print(dicContent)
 
         # col.update({"urlname":dicContent["urlname"]},dicContent, upsert=True)  # 条件存在则修改，无则新建插入
-        col.update_one({'urlname':dicContent["urlname"]},{'$setOnInsert':dicContent},upsert=True)  # 条件存在则pass，无则新建插入
+        col.insert_one(dicContent)
+        # col.update_one({'urlname':dicContent["urlname"]},{'$setOnInsert':dicContent},upsert=True)  # 条件存在则pass，无则新建插入
 
 if __name__ == '__main__':
     start()
