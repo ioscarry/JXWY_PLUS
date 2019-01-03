@@ -4,13 +4,11 @@ import re
 import time
 
 filename = r'test.trs'
-# filename2 = r'D:\云服务器导出TRS文件\12plus_kd8.trs'
-filename2 = r'D:\云服务器导出TRS文件\wyr_1812.trs'
+filename2 = r'D:\云服务器导出TRS文件\mix_final_2.trs'
 
 begin = time.time()
 final_count = 0
 erro_count = 0
-# mix_list = []    # 汇总到列表
 
 def read_file(name):
     with open(name, 'r',encoding='gb18030') as file:
@@ -24,8 +22,8 @@ def read_file(name):
 def start():
     global final_count,erro_count
     for everyStr in read_file(filename2):
-        # if final_count == 5:
-        #     break
+        if final_count == 5:
+            break
         final_count += 1
         print(final_count)
         dicContent = {}  # 以字典格式存储每一条数据

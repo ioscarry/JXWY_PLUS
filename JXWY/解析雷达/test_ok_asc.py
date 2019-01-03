@@ -18,21 +18,25 @@ col = db['jxwy']
 #192.168.2.253 27017
 
 filename = r'test.trs'
-filename2 = r'D:\云服务器导出TRS文件\mix_final_2.trs'
+filename2 = r'D:\云服务器导出TRS文件\baixing_final_2.trs'
 
 begin = time.time()
 final_count = 0
 erro_count = 0
-# mix_list = []    # 汇总到列表
+erro_list = []    # 汇总到列表
 
 def read_file(name):
     with open(name, 'r',encoding='gb18030') as file:
         allStr = ""    # 将所有内容拼接到一起
-        for line in file:
-            allStr += line.strip()
-            if 'IR_PUBTYPE'in line:
-                yield allStr
-                allStr = ""
+        try:
+            for line in file:
+                allStr += line.strip()
+                if 'IR_PUBTYPE'in line:
+                    yield allStr
+                    allStr = ""
+        except Exception as e:
+            erro_list.append(str(final_count+1)+e + ',\n')
+            print(e)
 
 def start():
     global final_count,erro_count
@@ -112,3 +116,4 @@ if __name__ == '__main__':
     print('插入失败的数量：' + str(erro_count))
     print('------------')
     print('数据库该集合的数据量：'+ str(col.estimated_document_count()))
+    print(erro_list)

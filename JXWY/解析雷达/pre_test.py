@@ -2,7 +2,7 @@
 import linecache
 
 filename = r'test.trs'
-filename2 = r'D:\云服务器导出TRS文件\12plus_kd8.trs'
+filename2 = r'D:\云服务器导出TRS文件\lieju_final_2.trs'
 
 def read_file(filename):
     with open(filename, 'r',encoding='gb18030') as file:

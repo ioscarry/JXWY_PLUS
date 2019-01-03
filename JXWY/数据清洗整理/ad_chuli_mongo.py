@@ -14,7 +14,7 @@ def getADerInfo(name):
     if len(str(name)) == 0:
         company_d = {'important':"",'category': '','address': '', 'scope': '','num': ''}
     else:
-        for item in company.find({'company':name,'hasGS':"1"}):
+        for item in company.find({'company':name,'hasGS':1}):
             company_d = { 'important': item['important'], 'category': item['category'],
                          'address': item['address'], 'scope': item['scope'], 'num': item['num']}
     return company_d
@@ -536,9 +536,3 @@ if __name__ == '__main__':
                 final_col.insert_one(res)
                 index += 1
                 # print(res)
-
-
-
-
-
-
