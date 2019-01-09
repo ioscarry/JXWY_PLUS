@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
-# 从库中取数据，公司表分离出单独数据
+# 从库中取数据，公司分离出单独数据，将各个字段值处理之后存入新的集合
 import mongo_config as cfg
 import time
 import random
 from textSummary import TextSummary
 import re
 
-#  广告主信息(从mongo中比对的数据)
+#  广告主信息(从mongo中比对的数据)  find/aggregate
 def getADerInfo(name):
     company = cfg.dbNew
-    company_d = {'important':"",'category': '','address': '', 'scope': '','num': ''}
+    company_d = {}
     if len(str(name)) == 0:
         company_d = {'important':"",'category': '','address': '', 'scope': '','num': ''}
     else:
-        for item in company.find({'company':name,'hasGS':1}):
+        for item in company.find({'company':name,'hasGS':1}):  # 找出每条该公司的数据
             company_d = { 'important': item['important'], 'category': item['category'],
                          'address': item['address'], 'scope': item['scope'], 'num': item['num']}
     return company_d
 
-# 媒体信息标签
+# 媒体信息标签   sitename字段必须与mongo_config文件中的网站名一致
 def getMediaInfo(name):
     dict = cfg.m_dict
     if name in dict:
@@ -27,71 +27,60 @@ def getMediaInfo(name):
     else:
         return '0'
 
-# 获取正负面词库
+# 从数据中获取正负面词库
 def getLexicon(test):
-    NegativeLexicon = cfg.NegativeLexicon
+    NegativeLexicon = cfg.NegativeLexicon     #[[],[],[]]
     Non_NegativeLexicon = cfg.Non_NegativeLexicon
+    content = test['content']
+
     all_NegativeLexicon = {}
-    for item in NegativeLexicon:
-        # print(item)
+    for item in NegativeLexicon:    # 遍历总列表每一个子列表 ['','','']
         try:
             temp = {}
+            temp['num'] = 0
+            temp['value'] = {}
             for word in item[1:]:
-                content = ''
-                if test['content'] != {}:
-                    content = test['content']
-                a = content.count(word)
-                if a is not 0:
-                    # print(word, a)
-                    if 'num' not in temp.keys():
-                        temp['num'] = a
-                    else:
-                        temp['num'] += a
+                a = content.count(word)  # 计算关键词数量
+                if a != 0:
+                    temp['num'] += a
+                    temp['value'][word] = a
+            all_NegativeLexicon[item[0]] = temp      # {'num':a,'value':{'':a,'':a}}
+                                                # all_NegativeLexicon = {
+            #                                                              {类目:{'num':a,'value':{'':a,'':a}}},
+            #                                                              {类目:{'num':a,'value':{'':a,'':a}}}
+            #                                                            }
+        # except AttributeError:
+        #     print('content')
+        #     print(test['content'])
+        #     print('type')
+        #     print(type(test['content']))
+        except Exception as e:
+            print(e)
 
-                    if "value" not in temp.keys():
-                        temp['value'] = {}
-                        temp['value'][word] = a
-                    # print(temp)
-            all_NegativeLexicon[item[0]] = temp
-        except AttributeError:
-            print('content')
-            print(test['content'])
-            print('type')
-            print(type(test['content']))
     all_Non_NegativeLexicon = {}
     for item in Non_NegativeLexicon:
         temp = {}
+        temp['num'] = 0
+        temp['value'] = {}
         try:
             for word in item[1:]:
-                content = ''
-                if test['content'] != {}:
-                    content = test['content']
                 a = content.count(word)
-                if a is not 0:
-                    # print(word, a)
-                    if 'num' not in temp.keys():
-                        temp["num"] = a
-                    else:
-                        temp["num"] += a
-
-                    if "value" not in temp.keys():
-                        temp["value"] = {}
-                        temp["value"][word] = a
+                if a != 0:
+                    temp["num"] += a
+                    temp["value"][word] = a
             all_Non_NegativeLexicon[item[0]] = temp
-        except AttributeError:
-            print('content')
-            print(test['content'])
-            print('type')
-            print(type(test['content']))
+
+        except Exception as e:
+            print(e)
+
     return all_NegativeLexicon, all_Non_NegativeLexicon
 
 # 获取法律法规
-def getLaw(test):
-    all_NegativeLexicon, all_Non_NegativeLexicon = getLexicon(test)
+def getLaw(test,all_NegativeLexicon):
+    # all_NegativeLexicon,all_Non_NegativeLexicon = getLexicon(test)
     c1 = []
     c2 = []
     c3 = []
-
     #业务违规
     if all_NegativeLexicon["其它负面"] != {}:
         law_real = "业务违规"
@@ -174,39 +163,32 @@ def getLaw(test):
     # print(law_real,c1,c2,c3)
     return {"law_real": law_real, "law_name": law_name, "law_content": law_content}
 
+# 广告摘要
 def getSummary(test):
+    # 处理时间
     t_time = (test['urlTime'])
+    t_nian = ''
     try:
         nian = t_time.split()
         if '-' in nian[0]:
             t_nian = nian[0].split('-')
         elif '.' in nian[0]:
             t_nian = nian[0].split('.')
-        if t_nian.__len__() != 3:
-            a = time.strftime("%Y-%m-%d", time.localtime()).split()[0]
-            a = a.split('-')
-            t_nian = a
+        if t_nian.__len__() != 3:              # 若没有发布时间，按当前时间！
+            t_nian = time.strftime("%Y-%m-%d", time.localtime()).split()[0].split('-')
     except:
         t_nian = ['1970', '01', '01']
 
-
+    # 处理内容
     if type(test['urlTitle']) is not str or type(test['content']) is not str:
-        ABSTRACT = ''
-    else:
-        textsummary = TextSummary()
-        textsummary.SetText(test['urlTitle'], test['content'])
-        ABSTRACT = str(textsummary.CalcSummary())
-        
-
-
-
-    if ABSTRACT == '':
         res = ''
     else:
+        textsummary = str(TextSummary(test['urlTitle'], test['content']).CalcSummary())
         res = str(t_nian[0] + '年' + t_nian[1] + '月' + t_nian[2] + '日，' + test['md5Tag'] + '在' + test[
-            'siteName'] + '发布' + ABSTRACT)
+            'siteName'] + '发布' + textsummary)
     return res
 
+# 根据content打标签
 def getad_category(test):
     pattern = re.compile(u"人民币收藏|错版钞|连体钞|"
                          u"纪念钞|纪念币|金银币|邮币卡|炒邮票|"
@@ -222,9 +204,8 @@ def getad_category(test):
                          u"期货|期权|双向交易|T\+0|"
                          u"金融合约|金融衍生品|标准化合约|远期合约|掉期|期权合约|期货合约|"
                          u"P2P|网贷|网络借贷|借贷平台")
-    keywords = re.findall(pattern, str(test['content']))
-    keywords = set(keywords)
-
+    keywordS = re.findall(pattern, str(test))
+    keywords = set(keywordS)
     result = []
     if len(keywords) == 0:
         ad_category = '其他'
@@ -294,31 +275,125 @@ def getad_category(test):
 
     return ';'.join(result)
 
+# 生成完整指数
+def getCompleteIndex(res):
+    content_info = 100
+
+    basic_data = 100
+    if res['ad_category'] == '':
+        basic_data -= 20
+
+    company_info = 100
+    if res['e_nameOfAdvertiser'] == '':
+        company_info = 0
+    else:
+        if company_info > 0:
+            if res['e_category'] == '':
+                company_info -= 20
+            if res['e_address'] == '':
+                company_info -= 20
+            if res['e_tag'] == '':
+                company_info -= 20
+            if res['e_Scope'] == '':
+                company_info -= 20
+            if res['e_num'] == '':
+                company_info -= 20
+    #########################
+    site_info = 100
+    if res['m_name'] == '':
+        if site_info > 0:
+            site_info -= 20
+    if res['m_yu'] == '':
+        if site_info > 0:
+            site_info -= 20
+    if res['m_icp'] == '':
+        if site_info > 0:
+            site_info -= 20
+    if res['m_tag'] == '':
+        if site_info > 0:
+            site_info -= 20
+    if res['m_address'] == '':
+        if site_info > 0:
+            site_info -= 20
+    #########################
+    law_info = 100
+    if law_info > 0:
+        if res['law_real'] == '':
+            law_info -= 20
+        if res['law_name'] == '':
+            law_info -= 20
+        if res['law_content'] == '':
+            law_info -= 20
+    #########################
+    other_info = 50
+    #########################
+    final = (
+            basic_data * 0.05 + content_info * 0.1 + company_info * 0.2 + site_info * 0.15 + law_info * 0.45 + other_info * 0.05)
+    return final
+
+# 生成违法指数
+def getLawIndex(negKeys,res):
+    SensitiveWords = negKeys
+    WordsCount = len(SensitiveWords.keys())
+    if WordsCount <= 0:
+        CountScore = 0
+    elif WordsCount > 0 and WordsCount <= 2:
+        CountScore = 30
+    elif WordsCount >= 3 and WordsCount <= 5:
+        CountScore = 60
+    else:
+        CountScore = 100
+    ############################
+    WordsFrequency = sum(SensitiveWords.values())
+    # for i in SensitiveWords.values():
+    #     WordsFrequency += i
+    if WordsFrequency <= 0:
+        FrequencyScore = 0
+    elif WordsFrequency > 0 and WordsFrequency <= 3:
+        FrequencyScore = 40
+    elif WordsFrequency >= 4 and WordsFrequency <= 10:
+        FrequencyScore = 70
+    else:
+        FrequencyScore = 100
+    ############################
+    if '法'in res['law_name']:
+        Level = 100
+    else:
+        Level = 70
+    ############################
+    StatuteCount = 0
+    if res['law_real'] != '':
+        StatuteCount = res['law_real'].count('|')+1
+        if res['law_real'].count('业务违规')> 1:
+            StatuteCount -= (res['law_real'].count('业务违规')-1)
+    StatuteCount *= 20
+
+    res = CountScore * 0.2 + FrequencyScore * 0.2 + Level * 0.3 + StatuteCount * 0.3
+    return res
+
+# 广告数据除原始字段外的其他字段都由该方法生成
 def getJson(test):
-    all_NegativeLexicon, all_Non_NegativeLexicon = getLexicon(test)
+
+    all_NegativeLexicon, all_Non_NegativeLexicon = getLexicon(test)  # num/value  关键词命中
     # 所有的词
     keys = {}
+    for negkey in all_NegativeLexicon.keys():  #  子列表的各类目名
+        if all_NegativeLexicon[negkey] != {}:  # 若该类目有values
+            for item in all_NegativeLexicon[negkey]['value'].keys():   # 遍历每个类目中的关键词
+                keys[item] = all_NegativeLexicon[negkey]['value'][item]  # 取每个关键词的词频
     # 负面次统计
-    negKeys={}
-    for key in all_NegativeLexicon.keys():
-        if all_NegativeLexicon[key] != {}:
-            for item in all_NegativeLexicon[key]['value'].keys():
-                keys[item] = all_NegativeLexicon[key]['value'][item]
-    negKeys = keys
+    negKeys = keys     # {'key':a,'key':a}
+
     for key in all_Non_NegativeLexicon.keys():
         if all_Non_NegativeLexicon[key] != {}:
             for item in all_Non_NegativeLexicon[key]['value'].keys():
                 keys[item] = all_Non_NegativeLexicon[key]['value'][item]
 
-
-    law = getLaw(test)
-    company_d = getADerInfo(test['md5Tag'])
+    law = getLaw(test,all_NegativeLexicon)  # 字典格式{law_real,law_name,law_content}  违反的法律内容
+    company_d = getADerInfo(test['md5Tag'])  # 从公司集合匹配符合广告主体的工商信息（提前调取好工商数据并入库）
     # 最终的广告详情数据
-    import json
     res = {
-        # "NegativeLexicon": all_NegativeLexicon,
-        # "Non_NegativeLexicon": all_Non_NegativeLexicon,
-        'ad_id': None,
+        'ad_id': '',
         # 采集时间
         "ad_loadTime": test['loadTime'],
         # 发表时间
@@ -328,7 +403,7 @@ def getJson(test):
         # 广告标题
         "ad_title": test['urlTitle'],
         # 广告所涉及的业务类型
-        "ad_category": getad_category(test),
+        "ad_category": getad_category(test['content']),  # 根据content打标签
         # 关键词
         "ad_KeyWords": str(keys).replace("'", '"'),
         # 关键词个数
@@ -362,7 +437,7 @@ def getJson(test):
         'law_real': law['law_real'],
         'law_name': law['law_name'],
         'law_content': law['law_content'],
-        'law_picid': '',
+        'law_picid': None,
 
         # 其他信息
         'other_terminal': '1',
@@ -372,167 +447,59 @@ def getJson(test):
 
         # 评价体系
         'complete_index': None,
-        'spread_index': random.randrange(30,88)+random.randrange(0,100)/100,
+        'spread_index': random.randrange(30,88)+random.randrange(0,100)/100,   # 传播力指数
         'law_index': None,
         'venture_index': None,
         'level_venture':None,
         'version': test['version']
     }
 
-    def getCompleteIndex(res):
-        jichuxinxi = 100
-        if res['ad_category'] is None:
-            jichuxinxi -= 20
-
-        zhengwenneirong = 100
-        guanggaozhuxinxi = 100
-        if res['e_nameOfAdvertiser'] is None or len(res['e_nameOfAdvertiser']) == 0 :
-            guanggaozhuxinxi = 0
-        elif res['e_nameOfAdvertiser'] is None:
-            if guanggaozhuxinxi > 0:
-                guanggaozhuxinxi -= 20
-        if res['e_category'] is None:
-            if guanggaozhuxinxi > 0:
-                guanggaozhuxinxi -= 20
-        if res['e_address'] is None:
-            if guanggaozhuxinxi > 0:
-                guanggaozhuxinxi -= 20
-        if res['e_tag'] is None:
-            if guanggaozhuxinxi > 0:
-                guanggaozhuxinxi -= 20
-        if res['e_Scope'] is None:
-            if guanggaozhuxinxi > 0:
-                guanggaozhuxinxi -= 20
-        if res['e_num'] is None:
-            if guanggaozhuxinxi > 0:
-                guanggaozhuxinxi -= 20
-        #########################
-        guanggaomeijiexinxi = 100
-        if res['m_name'] is not None:
-            if guanggaomeijiexinxi > 0:
-                guanggaomeijiexinxi -= 20
-        if res['m_yu'] is None:
-            if guanggaomeijiexinxi > 0:
-                guanggaomeijiexinxi -= 20
-        if res['m_icp'] is None:
-            if guanggaomeijiexinxi > 0:
-                guanggaomeijiexinxi -= 20
-        if res['m_tag'] is None:
-            if guanggaomeijiexinxi > 0:
-                guanggaomeijiexinxi -= 20
-        if res['m_address'] is None:
-            if guanggaomeijiexinxi > 0:
-                guanggaomeijiexinxi -= 20
-        #########################
-        weifaweiguixinxi = 100
-        # 'law_picid':
-        if res['law_real'] is None:
-            if weifaweiguixinxi > 0:
-                weifaweiguixinxi -= 20
-        if res['law_name'] is None:
-            if weifaweiguixinxi > 0:
-                weifaweiguixinxi -= 20
-        if res['law_content'] is None:
-            if weifaweiguixinxi > 0:
-                weifaweiguixinxi -= 20
-        #########################
-        qitaxinxi = 50
-        #########################
-        xinxiwanzhengxing = (
-                    jichuxinxi * 0.05 + zhengwenneirong * 0.1 + guanggaozhuxinxi * 0.2 + guanggaomeijiexinxi * 0.15 + weifaweiguixinxi * 0.45 + qitaxinxi * 0.05)
-        return xinxiwanzhengxing
-
     res['complete_index'] = getCompleteIndex(res)
-
-    def getLawIndex(res):
-        ############################
-        minganci=negKeys
-        ############################
-        shuliang=len(minganci.keys())
-        if shuliang<=0:
-            shuliang=0
-        elif shuliang>0 and shuliang<=2:
-            shuliang=30
-        elif shuliang>=3 and shuliang<=5:
-            shuliang=60
-        else:
-            shuliang=100
-        ############################
-        cipin=0
-        for i in minganci.values():
-            cipin+=i
-        if cipin<=0:
-            cipin=0
-        elif cipin>0and cipin<=3:
-            cipin=40
-        elif cipin>=4 and cipin<=10:
-            cipin=70
-        else:
-            cipin=100
-        ############################
-        dengji=0
-        if '法'in res['law_name']:
-            dengji=100
-        else:
-            dengji=70
-        ############################
-        tiaolishuliang=0
-        if res['law_real']is not '':
-            tiaolishuliang=res['law_real'].count('|')+1
-            if res['law_real'].count('业务违规')>1:
-                tiaolishuliang -= (res['law_real'].count('业务违规')-1)
-        tiaolishuliang*=20
-
-        res=shuliang*0.2+cipin*0.2+dengji*0.3+tiaolishuliang*0.3
-        return res
-
-    res['law_index']=getLawIndex(res)
-    res['venture_index'] = 0.5*res['law_index'] + 0.3*res['complete_index']+0.2*res['spread_index']
+    res['law_index']=getLawIndex(negKeys,res)
+    res['venture_index'] = 0.5 * res['law_index'] + 0.3 * res['complete_index']+0.2 * res['spread_index']
     if res['venture_index'] > 71.6:
         res['level_venture'] = 'Ⅰ类'
     elif res['venture_index']<=71.6 and res['venture_index']>=69:
         res['level_venture'] = 'Ⅱ类'
     elif res['venture_index'] < 69:
         res['level_venture'] = 'Ⅲ类'
-    else:res['venture_index'] = ''
+    else:
+        res['venture_index'] = ''
 
     return res
 
-# 对content做一下处理，去掉干扰字符和换行问题
-def queren(item):
+# 对content做一下处理，去掉干扰字符和换行问题，替换（第一遍处理）
+def ContentTreat(item):
     item = re.sub('<[\s\S]*?>','',str(item)).strip().replace('\r\n', '@@@rn@@@').replace(u'\001', '@@@001@@@')
     return item
 
 if __name__ == '__main__':
 
-    # 连接所需数据库,test为数据库名
-    source_col = cfg.dbOld.copy
-    final_col = cfg.dbOld.final_adv_all
+    source_col = cfg.dbOld.copy   # 需要处理的原数据库
+    final_col = cfg.dbOld.final_adv_all   # 处理后存放的数据库
     version = '20181231'
-    # 取数据标记，获取原始数据
-    # out_dict = {'out_version': '20181201'}
-    # for i in final_col.find({}).sort('_id', pymongo.DESCENDING).limit(1):
-    #     index = i['ad_id']
     index = 1
-    for item in source_col.find():
-        ad_d = {'urlTitle': item['urltitle'].strip(),
-                'urlTime': item['urltime'].strip(),
-                'md5Tag': str(item['company']).strip(),   # 报错 AttributeError: 'int' object has no attribute 'strip'
-                'content': queren(item['content'].strip()),
-                'siteName': item['sitename'].strip(),
-                'yuming': item['yuming'].strip(),
-                'icp': item['icp'].strip(),
-                'icpsheng': item['icpsheng'].strip(),
-                'loadTime': item['updatetime'].strip(),
-                'urlname': item['urlname'].strip(),
-                'ABSTRACT': "",
-                'class': item['category'],
-                'version': version}
-        if len(ad_d['content']) > 0:
-            res = getJson(ad_d)
-            if res['ad_KeyWords'] != '{}':
+    for item in source_col.find():   # 每条数据预处理
+        if item['content'].strip() > 0:   # 筛选出content非空数据
+            ad_d = {       # 数据的第一遍清洗
+                    'urlTitle': item['urltitle'].strip(),
+                    'urlTime': item['urltime'].strip(),
+                    'md5Tag': str(item['company']).strip(),   # 报错 AttributeError: 'int' object has no attribute 'strip'
+                    'content': ContentTreat(item['content'].strip()),
+                    'siteName': item['sitename'].strip(),
+                    'yuming': item['yuming'].strip(),
+                    'icp': item['icp'].strip(),
+                    'icpsheng': item['icpsheng'].strip(),
+                    'loadTime': item['updatetime'].strip(),
+                    'urlname': item['urlname'].strip(),
+                    'ABSTRACT': "",
+                    'class': item['category'],
+                    'version': version
+                    }
+            res = getJson(ad_d)        # 对数据详细处理
+
+            if res['ad_KeyWords'] != {}:
                 res['ad_id'] = index
-                # inert
                 final_col.insert_one(res)
                 index += 1
                 # print(res)

@@ -18,28 +18,33 @@ col = db['jxwy']
 #192.168.2.253 27017
 
 filename = r'test.trs'
-filename2 = r'D:\云服务器导出TRS文件\lieju_final_1.trs'
+filename2 = r'D:\云服务器导出TRS文件\lieju266572.trs'
 
 begin = time.time()
 final_count = 0
 erro_count = 0
-# mix_list = []    # 汇总到列表
+erro_list = []    # 报错汇总到列表
 
 def read_file(name):
-    with open(name, 'r',encoding='gb18030') as file:
+    with open(name, 'rb') as file:
         allStr = ""    # 将所有内容拼接到一起
-        for line in file:
-            allStr += line.strip()
-            if 'IR_PUBTYPE'in line:
-                yield allStr
-                allStr = ""
+        try:
+            for line in file:
+                line = line.decode('gb18030', 'ignore')
+                allStr += line.strip()
+                if 'IR_PUBTYPE' in line:
+                    yield allStr
+                    allStr = ""
+        except Exception as e:
+            erro_list.append(str(final_count+1)+ str(e) + ',\n')
+            print(e)
 
 def start():
     global final_count,erro_count
     for everyStr in read_file(filename2):
         final_count += 1
-        if final_count > 10:
-            break
+        # if final_count > 10:
+        #     break
         print(final_count)
         dicContent = {}  # 以字典格式存储每一条数据
         '=====================================华丽的分割线============================================'
@@ -100,10 +105,10 @@ def start():
             erro_count += 1
             print('这条数据不正常')
 
-        # print(dicContent)
+        print(dicContent)
 
         # col.update({"urlname":dicContent["urlname"]},dicContent, upsert=True)  # 条件存在则修改，无则新建插入
-        col.insert_one(dicContent)
+        # col.insert_one(dicContent)
         # col.update_one({'urlname':dicContent["urlname"]},{'$setOnInsert':dicContent},upsert=True)  # 条件存在则pass，无则新建插入
 
 if __name__ == '__main__':
@@ -114,3 +119,4 @@ if __name__ == '__main__':
     print('插入失败的数量：' + str(erro_count))
     print('------------')
     print('数据库该集合的数据量：'+ str(col.estimated_document_count()))
+    print(erro_list)

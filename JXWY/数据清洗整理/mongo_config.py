@@ -1,14 +1,9 @@
 
-
-# 连接数据库
 from pymongo import MongoClient
 
-
-# mongo数据库连接
 client = MongoClient('192.168.2.99', 27018)
 dbOld = client.hehe   #广告库
 dbNew = client.hehe.company  #company库名
-
 
 m_dict= {
             "东方头条网":{"m_yu":"eastday.com" ,"icp":"沪B2-20050088-87" ,"m_tag":"0" ,"m_address":"上海"},

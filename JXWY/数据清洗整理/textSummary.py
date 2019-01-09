@@ -2,14 +2,11 @@ import jieba.analyse
 import jieba.posseg
 
 class TextSummary:
-	text = ""
-	title = ""
-	keywords = list()
-	sentences = list()
-	summary = list()
-	def SetText(self, title, text):
+
+	def __init__(self, title, text):
 		self.title = title
-		self.text = text
+		self.text = text  # content字段
+
 	def __SplitSentence(self):
 		# 通过换行符对文档进行分段
 		sections = self.text.split("\n")
@@ -60,25 +57,28 @@ class TextSummary:
 		lastpos["mark"].append("LASTSENTENCE")
 
 
-
 	def __CalcKeywords(self):
 		# 计算tf-idfs，取出排名靠前的20个词
 		words_best = list()
 		words_best = words_best + jieba.analyse.extract_tags(self.text, topK=20)
+
 		# 提取第一段的关键词
 		parts = self.text.lstrip().split("\n")
 		firstpart = ""
-		if len(parts) >= 1:
+		if len(parts) >= 1:   # 如果存在关键词
 			firstpart = parts[0]
 		words_best = words_best + jieba.analyse.extract_tags(firstpart, topK=5)
+
 		# 提取title中的关键词
-		words_best =  words_best + jieba.analyse.extract_tags(self.title, topK=3)
-		# 将结果合并成一个句子，并进行分词
+		words_best = words_best + jieba.analyse.extract_tags(self.title, topK=3)
+
+		# 将结果合并成一个句子（3合1），并进行分词
 		text = ""
 		for w in words_best:
 			text = text + " " + w
 		# 计算词性，提取名词和动词
 		words = jieba.posseg.cut(text)
+
 		keywords = list()
 		for w in words:
 			flag = w.flag
@@ -92,7 +92,6 @@ class TextSummary:
 		self.keywords = keywords
 
 
-
 	def __CalcSentenceWeightByKeywords(self):
 		# 计算句子的关键词权重
 		for sentence in self.sentences:
@@ -101,7 +100,6 @@ class TextSummary:
 			for sentence in self.sentences:
 				if sentence["text"].find(keyword) >= 0:
 					sentence["weightKeywords"] = sentence["weightKeywords"] + 1
-
 
 
 	def __CalcSentenceWeightByPos(self):
@@ -120,7 +118,6 @@ class TextSummary:
 			sentence["weightPos"] = weightPos
 
 
-
 	def __CalcSentenceWeightByCueWords(self):
 		# 计算句子的线索词权重
 		index = ["总之", "总而言之", "报导", "新华社", "报道"]
@@ -130,7 +127,6 @@ class TextSummary:
 			for sentence in self.sentences:
 				if sentence["text"].find(i) >= 0:
 					sentence["weightCueWords"] = 1
-
 
 
 	def __CalcSentenceWeight(self):
@@ -158,4 +154,3 @@ class TextSummary:
 			sentence = self.sentences[i]
 			self.summary.append(sentence["text"])
 		return self.summary
-

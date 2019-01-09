@@ -23,19 +23,20 @@ filename2 = r'D:\云服务器导出TRS文件\baixing_final_2.trs'
 begin = time.time()
 final_count = 0
 erro_count = 0
-erro_list = []    # 汇总到列表
+erro_list = []    # 报错汇总到列表
 
 def read_file(name):
-    with open(name, 'r',encoding='gb18030') as file:
+    with open(name, 'rb') as file:
         allStr = ""    # 将所有内容拼接到一起
         try:
             for line in file:
+                line = line.decode('gb18030', 'ignore')
                 allStr += line.strip()
-                if 'IR_PUBTYPE'in line:
+                if 'IR_PUBTYPE' in line:
                     yield allStr
                     allStr = ""
         except Exception as e:
-            erro_list.append(str(final_count+1)+e + ',\n')
+            erro_list.append(str(final_count+1)+ str(e) + ',\n')
             print(e)
 
 def start():

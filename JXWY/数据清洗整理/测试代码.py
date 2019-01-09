@@ -1,3 +1,6 @@
+# coding=gbk
+import sys
+
 import pandas as pd
 import datetime
 import time
@@ -16,9 +19,83 @@ import time
 # # print(af)
 # print(temp[:7].replace('-',''))
 
-a = 100
+# temp = {}
+# temp['value'] = {}
+# temp['value']['hehe'] = 5
+# print(temp)
 
-if a>1:
-    print('1')
-if a >2 :
-    print('2')
+# from pymongo import MongoClient
+# client = MongoClient('192.168.2.99', 27018)
+# dbNew = client.hehe.company  #company¿âÃû
+# # company = dbNew.aggregate([{$match:{"":}}])
+# company = dbNew.find().limit(1)
+# print(company)
+# for i in company:
+#     print(i)
+
+
+t_time = "2018-12-02 15:26:57"
+nian = t_time.split()
+if '-' in nian[0]:
+    t_nian = nian[0].split('-')
+elif '.' in nian[0]:
+    t_nian = nian[0].split('.')
+if t_nian.__len__() != 3:
+    a = time.strftime("%Y-%m-%d", time.localtime()).split()[0]
+    a = a.split('-')
+    t_nian = a
+print(t_nian)
+
+# def getADerInfo(name):
+#     # company = cfg.dbNew
+#     # company_d = {}
+#     if len(str(name)) == 0:
+#         company_d = {'important':"",'category': '','address': '', 'scope': '','num': ''}
+#     else:
+#         for item in range(3):
+#             company_d = { 'important': 'haha'}
+#     return company_d
+#
+# print(getADerInfo('hehe'))
+
+a = time.strftime("%Y-%m-%d", time.localtime()).split()[0].split('-')
+print(a)
+
+import mongo_config as cfg
+def getMediaInfo(name):
+    dict = cfg.m_dict
+    if name in dict:
+        return dict[name]['m_tag']
+    else:
+        return '0'
+
+print(getMediaInfo('4399Ð¡ÓÎÏ·'))
+
+
+law_data = 100
+c1 = []
+c2 = []
+law_content = '|'.join(c2)
+res={'law_real':'hehe','law_name':'haha','law_content':law_content}
+if law_data > 0:
+    if res['law_real'] is None:
+        law_data -= 20
+    if res['law_name'] is None:
+        law_data -= 20
+    if res['law_content'] is '':
+        law_data -= 20
+
+print(law_data)
+
+a = None
+b = ''
+bb = 'hehe'
+print('%s size is %d' %(type(a),sys.getsizeof(a)))
+print('%s size is %d' %(type(b),sys.getsizeof(b)))
+print('%s size is %d' %(type(bb),sys.getsizeof(bb)))
+
+dic = {'hehe':1,'xixi':2,'gege':3}
+print(sum(dic.values()))
+print(sum(dic.keys()))
+# s = 'hehehhehehehhe'
+# print(s.__len__())
