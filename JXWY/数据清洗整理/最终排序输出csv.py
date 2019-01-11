@@ -5,13 +5,12 @@ from pymongo import MongoClient
 import pymongo
 import csv
 import out_config
-import datetime
 
 ad_address = out_config.address
 ad_class = out_config.ad_class
 e_class = out_config.e_class
 filename = r"C:\Users\zhd\Desktop\To_jiaoyu.csv"
-csvfile = open(filename, 'w', encoding='utf=8', newline='')
+csvfile = open(filename, 'w', encoding='utf-8', newline='')
 # writer = csv.writer(csvfile, delimiter='')
 writer = csv.writer(csvfile)
 
@@ -135,8 +134,7 @@ for data in ad_data:
         data['ad_category'] = ad_class[ad_class_value]
     if data['e_category'] in e_class.keys():
         data['e_category'] = e_class[data['e_category']]
-
-    # if count < 500000:   #####可删掉######
+    data.pop('version')
     writer.writerow(getlist(data))
     print(count+1)
     count += 1

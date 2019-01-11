@@ -1,3 +1,5 @@
+# 该代码是做摘要
+
 import jieba.analyse
 import jieba.posseg
 

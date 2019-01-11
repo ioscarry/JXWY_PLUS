@@ -1,5 +1,5 @@
 # coding=gbk
-import sys
+import sys,os
 
 import pandas as pd
 import datetime
@@ -61,17 +61,6 @@ print(t_nian)
 a = time.strftime("%Y-%m-%d", time.localtime()).split()[0].split('-')
 print(a)
 
-import mongo_config as cfg
-def getMediaInfo(name):
-    dict = cfg.m_dict
-    if name in dict:
-        return dict[name]['m_tag']
-    else:
-        return '0'
-
-print(getMediaInfo('4399小游戏'))
-
-
 law_data = 100
 c1 = []
 c2 = []
@@ -94,8 +83,8 @@ print('%s size is %d' %(type(a),sys.getsizeof(a)))
 print('%s size is %d' %(type(b),sys.getsizeof(b)))
 print('%s size is %d' %(type(bb),sys.getsizeof(bb)))
 
-dic = {'hehe':1,'xixi':2,'gege':3}
-print(sum(dic.values()))
-print(sum(dic.keys()))
-# s = 'hehehhehehehhe'
-# print(s.__len__())
+# dic = {'hehe':1,'xixi':2,'gege':3}
+# print(sum(dic.values()))
+# print(len(dic.keys()))
+
+# print(os.system('cmd'))

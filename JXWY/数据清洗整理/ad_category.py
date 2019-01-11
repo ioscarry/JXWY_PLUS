@@ -94,5 +94,3 @@ with open("data/ad_category.csv", "a",newline='', encoding="utf-8") as csvfile:
 
 
         writer.writerow([';'.join(result)])
-
-
